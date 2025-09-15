@@ -13,7 +13,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 # -------------------------------
 # 1) Directory Paths
 # -------------------------------
-BASE_DIR = Path("backend/data")  # change if needed
+BASE_DIR = Path("backend/data")
 RAW_DIR = BASE_DIR / "raw"
 INTERIM_DIR = BASE_DIR / "interim"
 CHUNK_DIR = BASE_DIR / "processed/chunks"

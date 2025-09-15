@@ -68,5 +68,6 @@ frontend/node_modules/
 *.pid.lock
 
 # ---- Logs ----
+*.env
 logs/
 *.log
