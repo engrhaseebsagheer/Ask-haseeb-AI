@@ -15,11 +15,11 @@ pc = Pinecone(api_key=PINECONE_API_KEY)
 index = pc.Index(PINECONE_INDEX)
 
 # Your test query
-query = "Haseeb Sagheer's all projects he worked on so far?"
+query = "Why is coding important in data science?"
 
 # Generate embedding for the query
 query_embedding = client.embeddings.create(
-    model="text-embedding-3-small",
+    model="text-embedding-3-large",
     input=query
 ).data[0].embedding
 

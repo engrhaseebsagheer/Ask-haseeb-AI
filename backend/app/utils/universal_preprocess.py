@@ -22,13 +22,12 @@ CHUNK_DIR.mkdir(parents=True, exist_ok=True)
 INTERIM_DIR.mkdir(parents=True, exist_ok=True)
 
 # -------------------------------
-# 2) Loaders
+# 2) Loaders for different file types
 # -------------------------------
 def load_pdf(path: Path) -> str:
     try:
         reader = PdfReader(str(path))
-        text = "\n".join(page.extract_text() or "" for page in reader.pages)
-        return text
+        return "\n".join(page.extract_text() or "" for page in reader.pages)
     except Exception as e:
         print(f"[WARN] Failed to read PDF {path}: {e}")
         return ""
@@ -62,7 +61,7 @@ def load_any(path: Path) -> str:
     return load_text(path)  # fallback for unknown types
 
 # -------------------------------
-# 3) Cleaning
+# 3) Cleaning text
 # -------------------------------
 def clean_text(text: str) -> str:
     text = text.replace("\ufeff", "").replace("\u200b", "")
@@ -86,15 +85,16 @@ def chunk_text(
     text: str,
     source: str,
     title: str,
-    chunk_tokens: int = 500,
+    chunk_tokens: int = 350,
     overlap: int = 50,
     encoding_name: str = "cl100k_base"
 ) -> List[Dict]:
+    """Split text into smaller chunks with metadata."""
     enc = tiktoken.get_encoding(encoding_name)
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1200,
-        chunk_overlap=200,
+        chunk_size=1000,        # max characters before splitting
+        chunk_overlap=200,      # ensures some context overlap
         separators=["\n\n", "\n", " ", ""]
     )
     rough_chunks = splitter.split_text(text)
@@ -152,7 +152,7 @@ def main():
 
         cleaned = clean_text(raw_text)
 
-        # Save cleaned text
+        # Save cleaned text for reference
         interim_path = INTERIM_DIR / f"{path.stem}.txt"
         interim_path.write_text(cleaned, encoding="utf-8")
 
@@ -171,7 +171,7 @@ def main():
 
         print(f"[OK] {path.name}: {len(chunks)} chunks")
 
-    # Save all chunks in one file
+    # Save all chunks in one aggregate file
     agg_file = CHUNK_DIR / "all_chunks.jsonl"
     with agg_file.open("w", encoding="utf-8") as f:
         for ch in all_chunks:
