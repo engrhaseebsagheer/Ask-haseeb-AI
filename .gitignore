@@ -1,3 +1,72 @@
-*.env
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.pkl
+*.so
+*.egg-info/
+*.log
+
+# ---- Virtual environments ----
+.venv/
+venv/
+env/
+ENV/
+
+# ---- IDE / Editor files ----
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---- Environment variables ----
 .env
-/secrets
+*.env
+
+# ---- Mac OS specific ----
+.DS_Store
+.DS_Store.jsonl
+
+# ---- Data files (raw, processed, intermediate) ----
+backend/data/raw/
+backend/data/interim/
+backend/data/processed/
+
+# ---- Build / cache ----
+dist/
+build/
+*.egg/
+.eggs/
+*.manifest
+*.spec
+
+# ---- Jupyter Notebook Checkpoints ----
+.ipynb_checkpoints/
+
+# ---- Test / Coverage reports ----
+htmlcov/
+.tox/
+.coverage
+.cache
+pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+*.hypothesis/
+
+# ---- Node.js (if you have a frontend) ----
+node_modules/
+frontend/node_modules/
+*.tsbuildinfo
+
+# ---- Docker ----
+*.pid
+*.seed
+*.pid.lock
+
+# ---- Logs ----
+logs/
+*.log

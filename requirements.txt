@@ -1,0 +1,14 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+langchain==0.2.14
+langchain-openai==0.1.22
+tiktoken==0.7.0
+openai==1.43.0
+pinecone-client==5.0.1
+pydantic-settings==2.4.0
+python-dotenv==1.0.1
+pypdf==4.3.1
+beautifulsoup4==4.12.3
+markdown==3.6
+rich==13.8.1
+uvicorn
