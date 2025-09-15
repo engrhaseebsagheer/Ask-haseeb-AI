@@ -85,6 +85,7 @@ def clean_text(text: str) -> str:
 def chunk_text(
     text: str,
     source: str,
+    title: str,
     chunk_tokens: int = 500,
     overlap: int = 50,
     encoding_name: str = "cl100k_base"
@@ -106,6 +107,7 @@ def chunk_text(
                 "id": str(uuid.uuid4()),
                 "text": ch.strip(),
                 "source": source,
+                "title": title,
                 "tokens": len(tokens)
             })
         else:
@@ -118,6 +120,7 @@ def chunk_text(
                     "id": str(uuid.uuid4()),
                     "text": piece,
                     "source": source,
+                    "title": title,
                     "tokens": len(window)
                 })
                 start += step
@@ -153,8 +156,11 @@ def main():
         interim_path = INTERIM_DIR / f"{path.stem}.txt"
         interim_path.write_text(cleaned, encoding="utf-8")
 
-        # Chunk the cleaned text
-        chunks = chunk_text(cleaned, source=str(path))
+        # Use filename as title
+        title = path.stem
+
+        # Chunk the cleaned text with title
+        chunks = chunk_text(cleaned, source=str(path), title=title)
         all_chunks.extend(chunks)
 
         # Save per-file chunks
