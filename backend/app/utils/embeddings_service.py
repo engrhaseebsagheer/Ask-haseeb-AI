@@ -67,14 +67,14 @@ def get_embeddings_batch(texts):
         return [None] * len(texts)
 
 # -------------------------------
-# 6) Upsert to Pinecone
+# 6) Upsert to Pinecone with text
 # -------------------------------
 BATCH_SIZE = 32
 print("🚀 Generating embeddings and pushing to Pinecone...")
 
 success_count = 0
 for i in tqdm(range(0, len(chunks), BATCH_SIZE), desc="Processing Batches"):
-    batch = chunks[i:i+BATCH_SIZE]
+    batch = chunks[i:i + BATCH_SIZE]
     texts = [ch["text"] for ch in batch]
     embeddings = get_embeddings_batch(texts)
 
@@ -86,7 +86,8 @@ for i in tqdm(range(0, len(chunks), BATCH_SIZE), desc="Processing Batches"):
                 emb,
                 {
                     "title": ch.get("title", "Untitled"),
-                    "source": ch.get("source", "Unknown")
+                    "source": ch.get("source", "Unknown"),
+                    "text": ch.get("text", "")  # ✅ Store full chunk text here
                 }
             ))
 
