@@ -3,6 +3,20 @@ from ..models.schema import QueryRequest, AskResponse, MatchChunk, HealthRespons
 from ..services.rag_service import rag_answer
 from ..utils.config import get_settings
 
+
+from fastapi import APIRouter
+from ..models.schema import HealthResponse
+from ..utils.config import get_settings
+from ..services.auto_ingest import process_new_drive_files
+
+router = APIRouter()
+settings = get_settings()
+
+@router.post("/ingest/run")
+def run_ingest_now():
+    result = process_new_drive_files()
+    return {"status": "ok", "result": result}
+
 router = APIRouter()
 settings = get_settings()
 
