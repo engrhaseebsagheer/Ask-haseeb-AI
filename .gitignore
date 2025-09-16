@@ -76,4 +76,4 @@ logs/
 /backend/credentials
 /backend/credentials*
 backend/credentials
-backend/credentials*
+backend/credentials*backend/credentials
