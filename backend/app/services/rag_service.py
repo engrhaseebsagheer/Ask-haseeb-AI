@@ -34,22 +34,39 @@ def retrieve(query: str, top_k: int | None = None) -> List[Dict[str, Any]]:
         matches = [m for m in matches if float(m.get("score", 0)) >= settings.MIN_SCORE]
     return matches
 
-# --- Compose system prompt for grounded answers ---
-_SYSTEM = (
-    "You are a precise assistant for Haseeb’s RAG system. "
-    "Answer strictly from the provided context. If the answer is not in context, say "
-    "\"I don't have enough information in the knowledge base to answer that.\" "
-    "Cite brief file titles inline in parentheses when helpful."
-)
+# --- Improved system prompt for better answers ---
+_SYSTEM = """
+You are an AI assistant with access to a knowledge base.
+Use ONLY the information from the provided context to answer the user's question.
 
+Follow these rules:
+1. Be accurate. If the context doesn't have the answer, clearly say:
+   "I don't have enough information in the knowledge base to answer that."
+2. Write in a natural, friendly tone — no robotic or overly technical wording.
+3. Keep answers concise but clear. Use short paragraphs or bullet points if needed.
+4. If sources are used, cite them briefly by title in parentheses — no raw file paths.
+5. Never invent information outside the context.
+"""
+
+# --- Format context for the LLM ---
 def _build_context(matches: List[Dict[str, Any]]) -> str:
     parts = []
     for m in matches:
         md = m.get("metadata", {}) or {}
         title = md.get("title") or md.get("source") or "Untitled"
+        title = title.replace("_", " ").replace(".txt", "").replace(".pdf", "")
         text = md.get("text") or ""
         parts.append(f"[{title}]\n{text}")
     return "\n\n---\n\n".join(parts)
+
+# --- Extract top N sources for display ---
+def _get_top_sources(matches: List[Dict[str, Any]], n: int = 3) -> List[str]:
+    sources = []
+    for m in matches[:n]:
+        title = m.get("metadata", {}).get("title") or m.get("metadata", {}).get("source") or "Untitled"
+        title = title.replace("_", " ").replace(".txt", "").replace(".pdf", "")
+        sources.append(f"📄 {title}")
+    return sources
 
 # --- LLM call ---
 def answer_from_context(query: str, matches: List[Dict[str, Any]]) -> str:
@@ -57,8 +74,7 @@ def answer_from_context(query: str, matches: List[Dict[str, Any]]) -> str:
 
     messages = [
         {"role": "system", "content": _SYSTEM},
-        {"role": "user",
-         "content": f"Context:\n{context}\n\nQuestion: {query}\nAnswer clearly and concisely."}
+        {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}\n\nAnswer:"}
     ]
 
     resp = _oai.chat.completions.create(
@@ -69,8 +85,24 @@ def answer_from_context(query: str, matches: List[Dict[str, Any]]) -> str:
     )
     return resp.choices[0].message.content.strip()
 
-# --- Main pipeline ---
-def rag_answer(query: str) -> tuple[str, List[Dict[str, Any]]]:
+# --- Main pipeline for end user ---
+def rag_answer(query: str):
     matches = retrieve(query)
     answer = answer_from_context(query, matches)
-    return answer, matches
+
+    top_sources = []
+    for m in matches[:3]:
+        md = m.get("metadata", {}) or {}
+        title = md.get("title") or md.get("source") or "Untitled"
+        title = title.replace("_", " ").replace(".txt", "")
+        top_sources.append(f"📄 {title}")
+
+    return {
+        "question": query,
+        "answer": answer,
+        "sources": top_sources,
+        "matches": matches   # ✅ put it back so routes.py works
+    }
+
+
+

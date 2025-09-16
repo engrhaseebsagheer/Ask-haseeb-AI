@@ -1,30 +1,29 @@
+# backend/app/api/routes.py
 from fastapi import APIRouter, HTTPException
-from ..models.schema import QueryRequest, AskResponse, MatchChunk, HealthResponse
+from ..models.schema import QueryRequest
 from ..services.rag_service import rag_answer
 from ..utils.config import get_settings
 
 router = APIRouter()
 settings = get_settings()
 
-@router.get("/health", response_model=HealthResponse)
-def health():
-    return {"status": "ok", "app": settings.APP_NAME}
-
-@router.post("/ask", response_model=AskResponse)
+@router.post("/ask")
 def ask(req: QueryRequest):
     if not req.text or not req.text.strip():
         raise HTTPException(status_code=400, detail="Query text is required.")
 
-    answer, matches = rag_answer(req.text)
+    result = rag_answer(req.text)
 
-    retrieved = []
-    for m in matches:
+    # Extract top 3 sources for the UI
+    sources = []
+    for m in result["matches"][:3]:
         md = m.get("metadata", {}) or {}
-        retrieved.append(MatchChunk(
-            score=float(m.get("score", 0)),
-            title=md.get("title"),
-            source=md.get("source"),
-            text=md.get("text")
-        ))
+        sources.append({
+            "title": md.get("title") or "Untitled",
+            "url": md.get("source") or "#"
+        })
 
-    return AskResponse(query=req.text, answer=answer, retrieved=retrieved)
+    return {
+        "answer": result["answer"],
+        "sources": sources
+    }
