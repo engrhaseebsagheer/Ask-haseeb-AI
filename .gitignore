@@ -77,3 +77,7 @@ logs/
 /backend/credentials*
 backend/credentials
 backend/credentials*backend/credentials
+
+mykeypair.pem
+/mykeypair.pem
+mykeypair.pem
