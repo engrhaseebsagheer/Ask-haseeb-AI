@@ -127,7 +127,7 @@ def chunk_text(
     return final_chunks
 
 # -------------------------------
-# 5) Main Runner
+# 5) Iterator for batch processing
 # -------------------------------
 def iter_files() -> Iterable[Path]:
     for f in RAW_DIR.rglob("*"):
@@ -135,6 +135,44 @@ def iter_files() -> Iterable[Path]:
             print(f"[DEBUG] Found: {f}")
             yield f
 
+# -------------------------------
+# 6) Reusable function for single file
+# -------------------------------
+def process_file_to_chunks(file_path: str, chunk_tokens: int = 350, overlap: int = 50) -> List[Dict]:
+    """
+    Process a single file: load, clean, chunk, and return chunks as a list of dicts.
+    Saves interim text and per-file chunk JSONL for consistency.
+    """
+    path = Path(file_path)
+    if not path.exists() or not path.is_file():
+        print(f"[SKIP] {file_path}: File not found")
+        return []
+
+    raw_text = load_any(path)
+    if not raw_text.strip():
+        print(f"[SKIP] {file_path}: No extractable text")
+        return []
+
+    cleaned = clean_text(raw_text)
+
+    # Save interim text for reference/debugging
+    interim_path = INTERIM_DIR / f"{path.stem}.txt"
+    interim_path.write_text(cleaned, encoding="utf-8")
+
+    title = path.stem
+    chunks = chunk_text(cleaned, source=str(path), title=title, chunk_tokens=chunk_tokens, overlap=overlap)
+
+    # Save per-file chunks JSONL
+    out_file = CHUNK_DIR / f"{path.stem}.jsonl"
+    with out_file.open("w", encoding="utf-8") as f:
+        for ch in chunks:
+            f.write(json.dumps(ch, ensure_ascii=False) + "\n")
+
+    return chunks
+
+# -------------------------------
+# 7) Batch processing entry point
+# -------------------------------
 def main():
     all_chunks = []
     file_count = 0
@@ -144,31 +182,8 @@ def main():
     for path in iter_files():
         file_count += 1
         print(f"[LOAD] {path.name}")
-
-        raw_text = load_any(path)
-        if not raw_text.strip():
-            print(f"[SKIP] {path.name}: No extractable text")
-            continue
-
-        cleaned = clean_text(raw_text)
-
-        # Save cleaned text for reference
-        interim_path = INTERIM_DIR / f"{path.stem}.txt"
-        interim_path.write_text(cleaned, encoding="utf-8")
-
-        # Use filename as title
-        title = path.stem
-
-        # Chunk the cleaned text with title
-        chunks = chunk_text(cleaned, source=str(path), title=title)
+        chunks = process_file_to_chunks(str(path))
         all_chunks.extend(chunks)
-
-        # Save per-file chunks
-        out_file = CHUNK_DIR / f"{path.stem}.jsonl"
-        with out_file.open("w", encoding="utf-8") as f:
-            for ch in chunks:
-                f.write(json.dumps(ch, ensure_ascii=False) + "\n")
-
         print(f"[OK] {path.name}: {len(chunks)} chunks")
 
     # Save all chunks in one aggregate file
