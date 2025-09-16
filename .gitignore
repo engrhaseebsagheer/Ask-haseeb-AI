@@ -71,3 +71,9 @@ frontend/node_modules/
 *.env
 logs/
 *.log
+/.venv
+/Users/haseebsagheer/Documents/Python Learning/Ask Haseeb AI/backend/credentials
+/backend/credentials
+/backend/credentials*
+backend/credentials
+backend/credentials*
