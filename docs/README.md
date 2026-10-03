@@ -1,7 +1,7 @@
 # Ask Haseeb AI
 
 Ask Haseeb AI is a **Retrieval-Augmented Generation (RAG)** powered personal AI assistant designed to answer questions about Haseeb Sagheer's portfolio, projects, and professional background.  
-The system leverages **LangChain**, **OpenAI GPT-4**, **Pinecone**, and **FastAPI** to deliver a highly accurate, dynamic, and interactive experience.  
+The system leverages **LangChain**, **OpenAI**, **Pinecone**, and **FastAPI** to deliver a highly accurate, dynamic, and interactive experience.  
 It will be deployed live at **[ask.haseebsagheer.com](https://ask.haseebsagheer.com/)**.
 
 ---

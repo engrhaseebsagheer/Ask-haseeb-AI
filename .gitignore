@@ -81,3 +81,8 @@ backend/credentials*backend/credentials
 mykeypair.pem
 /mykeypair.pem
 mykeypair.pem
+# ---- Runtime logs (unanswered questions) ----
+backend/data/logs/
+
+# ---- Leftover transfer archives ----
+*.zip

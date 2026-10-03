@@ -1,0 +1,14 @@
+[
+  {"question": "What products has Haseeb shipped?", "expect_any": [["DailySiteLog"], ["Evenhaus"], ["DoseAnchor"]]},
+  {"question": "What is DailySiteLog?", "expect_any": [["construction"], ["daily report", "daily site report", "daily reports"]]},
+  {"question": "How does Evenhaus decide what is fair?", "expect_any": [["effort", "points"]]},
+  {"question": "Is Evenhaus free?", "expect_any": [["free"]]},
+  {"question": "What is DoseAnchor built with?", "expect_any": [["React Native", "Expo"], ["Supabase"]]},
+  {"question": "How does the Video Maker avoid overlapping text and images?", "expect_any": [["collision", "overlap"]]},
+  {"question": "Does the Threads pipeline post without review?", "expect_any": [["Telegram", "approve", "approval", "review"]]},
+  {"question": "What vector database does Ask Haseeb AI use?", "expect_any": [["Pinecone"]]},
+  {"question": "What did Haseeb study and where?", "expect_any": [["Software Engineering"], ["Capital University", "CUST"]]},
+  {"question": "What was his research paper about?", "expect_any": [["education"], ["life skills", "AI"]]},
+  {"question": "How can I contact Haseeb?", "expect_any": [["engrhaseebsagheer@gmail.com", "email"]]},
+  {"question": "What is Haseeb's favourite football team?", "expect_refusal": true}
+]

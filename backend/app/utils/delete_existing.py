@@ -17,7 +17,7 @@ if PINECONE_INDEX in pc.list_indexes().names():
 # --- Recreate index with same config ---
 pc.create_index(
     name=PINECONE_INDEX,
-    dimension=1536,
+    dimension=3072,  # text-embedding-3-large
     metric="cosine",
     spec=ServerlessSpec(cloud="aws", region=PINECONE_REGION)
 )

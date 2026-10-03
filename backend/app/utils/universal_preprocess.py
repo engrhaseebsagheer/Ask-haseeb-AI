@@ -7,8 +7,6 @@ from typing import List, Dict, Iterable
 from bs4 import BeautifulSoup
 from pypdf import PdfReader
 from markdown import markdown
-import tiktoken
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # -------------------------------
 # 1) Directory Paths
@@ -79,52 +77,66 @@ def clean_text(text: str) -> str:
     return "\n".join(lines).strip()
 
 # -------------------------------
-# 4) Chunking with LangChain
+# 4) Chunking (plain Python, no extra packages)
 # -------------------------------
+SEPARATORS = ("\n\n", "\n", ". ", " ")
+
+
+def split_text(text: str, size: int = 1000, overlap: int = 200, seps=SEPARATORS) -> List[str]:
+    """Split text into pieces of at most `size` characters, breaking at paragraphs first,
+    then lines, sentences and words. Each piece starts with the tail of the previous one,
+    so meaning carries across the boundary."""
+    text = text.strip()
+    if len(text) <= size:
+        return [text] if text else []
+
+    sep = next((s for s in seps if s in text), None)
+    if sep is None:  # one unbroken run of characters: cut it
+        step = size - overlap
+        return [text[i:i + size] for i in range(0, len(text), step)]
+
+    rest = seps[seps.index(sep) + 1:]
+    pieces: List[str] = []
+    for part in text.split(sep):
+        part = part.strip()
+        if not part:
+            continue
+        pieces.extend(split_text(part, size, overlap, rest) if len(part) > size else [part])
+
+    chunks: List[str] = []
+    current = ""
+    joiner = sep if sep.strip() == "" else sep.strip() + " "
+    for piece in pieces:
+        candidate = f"{current}{joiner}{piece}" if current else piece
+        if len(candidate) <= size:
+            current = candidate
+            continue
+        if current:
+            chunks.append(current)
+            tail = current[-overlap:]
+            cut = tail.find(" ")
+            tail = tail[cut + 1:] if cut != -1 else tail  # start the overlap on a word boundary
+            current = f"{tail}{joiner}{piece}" if len(tail) + len(joiner) + len(piece) <= size else piece
+        else:
+            current = piece
+    if current:
+        chunks.append(current)
+    return chunks
+
+
 def chunk_text(
     text: str,
     source: str,
     title: str,
     chunk_tokens: int = 350,
     overlap: int = 50,
-    encoding_name: str = "cl100k_base"
 ) -> List[Dict]:
-    """Split text into smaller chunks with metadata."""
-    enc = tiktoken.get_encoding(encoding_name)
-
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,        # max characters before splitting
-        chunk_overlap=200,      # ensures some context overlap
-        separators=["\n\n", "\n", " ", ""]
-    )
-    rough_chunks = splitter.split_text(text)
-
-    final_chunks = []
-    for ch in rough_chunks:
-        tokens = enc.encode(ch)
-        if len(tokens) <= chunk_tokens:
-            final_chunks.append({
-                "id": str(uuid.uuid4()),
-                "text": ch.strip(),
-                "source": source,
-                "title": title,
-                "tokens": len(tokens)
-            })
-        else:
-            start = 0
-            step = chunk_tokens - overlap
-            while start < len(tokens):
-                window = tokens[start:start + chunk_tokens]
-                piece = enc.decode(window).strip()
-                final_chunks.append({
-                    "id": str(uuid.uuid4()),
-                    "text": piece,
-                    "source": source,
-                    "title": title,
-                    "tokens": len(window)
-                })
-                start += step
-    return final_chunks
+    """Split text into chunks with metadata. 1,000 characters is roughly 250 tokens,
+    which keeps every chunk under the 350-token target without a tokenizer."""
+    return [
+        {"id": str(uuid.uuid4()), "text": ch, "source": source, "title": title, "tokens": len(ch) // 4}
+        for ch in split_text(text, size=1000, overlap=200)
+    ]
 
 # -------------------------------
 # 5) Iterator for batch processing

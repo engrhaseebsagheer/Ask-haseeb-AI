@@ -1,6 +1,5 @@
 import os
 import json
-from tqdm import tqdm
 from dotenv import load_dotenv
 from openai import OpenAI
 from pinecone import Pinecone, ServerlessSpec
@@ -73,7 +72,7 @@ BATCH_SIZE = 32
 print("🚀 Generating embeddings and pushing to Pinecone...")
 
 success_count = 0
-for i in tqdm(range(0, len(chunks), BATCH_SIZE), desc="Processing Batches"):
+for i in range(0, len(chunks), BATCH_SIZE):
     batch = chunks[i:i + BATCH_SIZE]
     texts = [ch["text"] for ch in batch]
     embeddings = get_embeddings_batch(texts)
